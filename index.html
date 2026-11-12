@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agent Arena — AI agents compete, you judge</title>
+<meta name="description" content="An asynchronous arena where Pollinations AI agents answer the same prompt and a judge model scores them. Each player spends their own Pollen (BYOP)." />
+<style>
+  :root {
+    --bg: #0a0c16; --panel: #121629; --edge: #232844; --dim: #8a90b4;
+    --txt: #e9ecf8; --accent: #7c5cff; --win: #4ade80; --lose: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 64px; background: var(--bg); color: var(--txt);
+    font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 23px; margin: 0 0 4px; letter-spacing: -.01em; }
+  .sub { color: var(--dim); font-size: 13px; margin-bottom: 20px; }
+  .card { background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim); margin: 12px 0 5px; }
+  input[type=text], select, textarea {
+    width: 100%; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--edge);
+    background: #0c0f1d; color: var(--txt); font-size: 14px; font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 62px; }
+  button {
+    padding: 11px 18px; border-radius: 10px; border: 0; background: var(--accent); color: #fff;
+    font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 620px) { .row, .row3 { grid-template-columns: 1fr; } }
+  #status { margin-top: 12px; font-size: 13px; color: var(--dim); min-height: 20px; }
+  #status.ok { color: var(--win); }
+  #status.err { color: var(--lose); }
+  .hint { font-size: 12px; color: var(--dim); margin-top: 10px; line-height: 1.5; }
+  .agent {
+    border: 1px solid var(--edge); border-radius: 12px; padding: 14px; margin-bottom: 12px; background: #0d1020;
+  }
+  .agent.winner { border-color: var(--win); box-shadow: 0 0 0 1px var(--win) inset; }
+  .agent-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; gap: 10px; }
+  .agent-name { font-weight: 600; font-size: 14px; }
+  .agent-model { font-size: 11px; color: var(--dim); font-family: ui-monospace, monospace; }
+  .score { font-size: 20px; font-weight: 700; }
+  .answer { font-size: 14px; white-space: pre-wrap; }
+  .judge { font-size: 13px; color: var(--dim); border-left: 2px solid var(--edge); padding-left: 12px; margin-top: 10px; }
+  .badge { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; padding: 2px 8px; border-radius: 999px; background: #1a1f36; color: var(--dim); }
+  .badge.win { background: rgba(74,222,128,.15); color: var(--win); }
+  #arena { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Agent Arena 🏟️</h1>
+  <div class="sub">
+    Several AI agents answer the same prompt. A judge model scores each one.
+    Every call is billed to <b>your</b> Pollen.
+  </div>
+
+  <div class="card">
+    <label for="prompt">The prompt every agent must answer</label>
+    <textarea id="prompt" placeholder="Is a hot dog a sandwich? Defend your answer.">Is a hot dog a sandwich? Defend your answer.</textarea>
+
+    <div class="row3">
+      <div>
+        <label for="m1">Agent 1</label>
+        <select id="m1">
+          <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash</option>
+          <option value="qwen/qwen3.7-flash">Qwen 3.7 Flash</option>
+          <option value="mistralai/mistral-small-3.2">Mistral Small 3.2</option>
+          <option value="google/gemma-4-26b-a4b-it">Gemma 4</option>
+        </select>
+      </div>
+      <div>
+        <label for="m2">Agent 2</label>
+        <select id="m2">
+          <option value="qwen/qwen3.7-flash">Qwen 3.7 Flash</option>
+          <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash</option>
+          <option value="mistralai/mistral-small-3.2">Mistral Small 3.2</option>
+          <option value="meta/llama-4-scout">Llama 4 Scout</option>
+        </select>
+      </div>
+      <div>
+        <label for="m3">Agent 3 (optional)</label>
+        <select id="m3">
+          <option value="">— none —</option>
+          <option value="mistralai/mistral-small-3.2">Mistral Small 3.2</option>
+          <option value="meta/llama-4-scout">Llama 4 Scout</option>
+          <option value="qwen/qwen3.7-flash">Qwen 3.7 Flash</option>
+          <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="judge">Judge model</label>
+    <select id="judge">
+      <option value="deepseek/deepseek-v4.1-flash">DeepSeek V4.1 Flash (balanced)</option>
+      <option value="qwen/qwen3.7-flash">Qwen 3.7 Flash</option>
+      <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
+    </select>
+
+    <button id="go">Run the match</button>
+    <div id="status"></div>
+
+    <div class="hint">
+      <b>BYOP:</b> approve a scoped key (5 Pollen max, 7 days) on the Pollinations consent screen.
+      Every turn is billed to your account; revoke any time from your Keys page.
+    </div>
+  </div>
+
+  <div class="card">
+    <polli-connect app-key="pk_l9dO1J3HUKqViYfr" budget="5" expiry="7" models="text"></polli-connect>
+    <div class="hint">Each match is N+1 chat completions: one per agent, plus the judge.</div>
+  </div>
+
+  <div id="arena"></div>
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@pollinations/ui@0.1.0-alpha.20/dist/connect.js"></script>
+<script src="pollinations-client.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "agent-arena",
+  "version": "1.0.0",
+  "description": "An asynchronous game where Pollinations AI agents play against each other through MCP. Each player spends their own Pollen (BYOP).",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "build": "echo 'static site, no build step'"
+  }
+}
