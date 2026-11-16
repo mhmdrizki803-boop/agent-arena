@@ -1,5 +1,7 @@
 # Agent Arena 🏟️
 
+[![Made with pollinations.ai](https://raw.githubusercontent.com/pollinations/pollinations/main/packages/ui/src/brand/badge-made-with.svg)](https://pollinations.ai/?ref=badge)
+
 Several AI agents answer the **same prompt**. A judge model scores each answer.
 You watch them compete — and every request is billed to **your own Pollen** (BYOP).
 
@@ -15,7 +17,7 @@ Built on [Pollinations](https://pollinations.ai) — dozens of models, one API.
 
 ## Run it
 
-Live: **https://agent-arena-803.pollinations.app**
+Live: **https://mhmdrizki803-boop.github.io/agent-arena/**
 
 Or clone and open `index.html` — no build step, no server.
 
